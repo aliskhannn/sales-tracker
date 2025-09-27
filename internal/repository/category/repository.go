@@ -66,7 +66,7 @@ func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*model.Category
 	return &c, nil
 }
 
-// List retrieves all categories from database.
+// List retrieves all categories from the database.
 func (r *Repository) List(ctx context.Context) ([]model.Category, error) {
 	query := `
 		SELECT id, name, description, parent_id, created_at, updated_at
@@ -83,7 +83,9 @@ func (r *Repository) List(ctx context.Context) ([]model.Category, error) {
 	for rows.Next() {
 		var c model.Category
 
-		if err = rows.Scan(&c); err != nil {
+		if err = rows.Scan(
+			&c.ID, &c.Name, &c.Description, &c.ParentID, &c.CreatedAt, &c.UpdatedAt,
+		); err != nil {
 			return nil, fmt.Errorf("list categories: %w", err)
 		}
 
@@ -123,7 +125,7 @@ func (r *Repository) Update(ctx context.Context, c *model.Category) error {
 	}
 
 	if n == 0 {
-		return ErrNoCategoriesFound
+		return ErrCategoryNotFound
 	}
 
 	return nil
@@ -147,7 +149,7 @@ func (r *Repository) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	if n == 0 {
-		return ErrNoCategoriesFound
+		return ErrCategoryNotFound
 	}
 
 	return nil
