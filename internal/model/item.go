@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // ItemKind enumerates the supported kinds of an item/transaction.
@@ -31,14 +32,14 @@ type ItemKind string
 //   - Metadata: JSONB for extensible attributes
 //   - CreatedAt, UpdatedAt: DB-managed timestamps
 type Item struct {
-	ID         uuid.UUID  `db:"id" json:"id"`
-	Kind       ItemKind   `db:"kind" json:"kind"`
-	Title      string     `db:"title" json:"title"`
-	Amount     string     `db:"amount" json:"amount"` // as string to preserve precision; parse with decimal libs if needed
-	Currency   string     `db:"currency" json:"currency"`
-	OccurredAt time.Time  `db:"occurred_at" json:"occurred_at"`
-	CategoryID *uuid.UUID `db:"category_id,omitempty" json:"category_id,omitempty"`
-	Metadata   []byte     `db:"metadata" json:"metadata"` // store raw JSONB bytes; unmarshal when needed
-	CreatedAt  time.Time  `db:"created_at" json:"created_at"`
-	UpdatedAt  time.Time  `db:"updated_at" json:"updated_at"`
+	ID         uuid.UUID       `db:"id" json:"id"`
+	Kind       ItemKind        `db:"kind" json:"kind"`
+	Title      string          `db:"title" json:"title"`
+	Amount     decimal.Decimal `db:"amount" json:"amount"` // as string to preserve precision; parse with decimal libs if needed
+	Currency   string          `db:"currency" json:"currency"`
+	OccurredAt time.Time       `db:"occurred_at" json:"occurred_at"`
+	CategoryID *uuid.UUID      `db:"category_id,omitempty" json:"category_id,omitempty"`
+	Metadata   []byte          `db:"metadata" json:"metadata"` // store raw JSONB bytes; unmarshal when needed
+	CreatedAt  time.Time       `db:"created_at" json:"created_at"`
+	UpdatedAt  time.Time       `db:"updated_at" json:"updated_at"`
 }
