@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -27,7 +28,7 @@ type Item struct {
 	Currency   string          `db:"currency" json:"currency"`
 	OccurredAt time.Time       `db:"occurred_at" json:"occurred_at"`
 	CategoryID *uuid.UUID      `db:"category_id,omitempty" json:"category_id,omitempty"`
-	Metadata   []byte          `db:"metadata" json:"metadata"` // store raw JSONB bytes
+	Metadata   json.RawMessage `db:"metadata" json:"metadata"` // store raw JSONB bytes
 	CreatedAt  time.Time       `db:"created_at" json:"created_at"`
 	UpdatedAt  time.Time       `db:"updated_at" json:"updated_at"`
 }

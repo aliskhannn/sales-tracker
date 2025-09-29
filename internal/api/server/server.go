@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/wb-go/wbf/ginext"
+
+	"github.com/aliskhannn/sales-tracker/internal/config"
 )
 
 // New creates a new HTTP server with the specified address and router.
@@ -14,9 +16,11 @@ import (
 //
 // Returns:
 //   - an *http.Server configured with the given address and router.
-func New(addr string, router *ginext.Engine) *http.Server {
+func New(cfg *config.Config, router *ginext.Engine) *http.Server {
 	return &http.Server{
-		Addr:    addr,
-		Handler: router,
+		Addr:         cfg.Server.HTTPPort,
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+		Handler:      router,
 	}
 }

@@ -27,7 +27,7 @@ func (r *Repository) Sum(ctx context.Context, filter *model.ItemFilter) (string,
 		WHERE ($1::timestamptz IS NULL OR occurred_at >= $1)
 		  AND ($2::timestamptz IS NULL OR occurred_at <= $2)
 		  AND ($3::uuid IS NULL OR category_id = $3)
-		  AND ($4::text IS NULL OR kind = $4);
+		  AND ($4::item_kind IS NULL OR kind = $4);
 	`
 
 	var total string
@@ -52,7 +52,7 @@ func (r *Repository) Avg(ctx context.Context, filter *model.ItemFilter) (string,
 		WHERE ($1::timestamptz IS NULL OR occurred_at >= $1)
 		  AND ($2::timestamptz IS NULL OR occurred_at <= $2)
 		  AND ($3::uuid IS NULL OR category_id = $3)
-		  AND ($4::text IS NULL OR kind = $4);
+		  AND ($4::item_kind IS NULL OR kind = $4);
 	`
 
 	var avg string
@@ -77,7 +77,7 @@ func (r *Repository) Count(ctx context.Context, filter *model.ItemFilter) (int64
 		WHERE ($1::timestamptz IS NULL OR occurred_at >= $1)
 		  AND ($2::timestamptz IS NULL OR occurred_at <= $2)
 		  AND ($3::uuid IS NULL OR category_id = $3)
-		  AND ($4::text IS NULL OR kind = $4);
+		  AND ($4::item_kind IS NULL OR kind = $4);
 	`
 
 	var cnt int64
@@ -105,7 +105,7 @@ func (r *Repository) Median(ctx context.Context, filter *model.ItemFilter) (stri
 		WHERE ($1::timestamptz IS NULL OR occurred_at >= $1)
 		  AND ($2::timestamptz IS NULL OR occurred_at <= $2)
 		  AND ($3::uuid IS NULL OR category_id = $3)
-		  AND ($4::text IS NULL OR kind = $4);
+		  AND ($4::item_kind IS NULL OR kind = $4);
 	`
 
 	var median string
@@ -133,7 +133,7 @@ func (r *Repository) Percentile(ctx context.Context, filter *model.ItemFilter, p
 		WHERE ($2::timestamptz IS NULL OR occurred_at >= $2)
 		  AND ($3::timestamptz IS NULL OR occurred_at <= $3)
 		  AND ($4::uuid IS NULL OR category_id = $4)
-		  AND ($5::text IS NULL OR kind = $5);
+		  AND ($5::item_kind IS NULL OR kind = $5);
 	`
 
 	var value string

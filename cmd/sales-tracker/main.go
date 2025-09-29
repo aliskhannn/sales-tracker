@@ -66,7 +66,7 @@ func main() {
 
 	// Initialize API router and HTTP server.
 	r := router.New(categoryHandler, itemHandler, analyticsHandler)
-	s := server.New(cfg.Server.HTTPPort, r)
+	s := server.New(cfg, r)
 
 	// Start HTTP server in a separate goroutine.
 	go func() {

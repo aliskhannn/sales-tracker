@@ -2,15 +2,16 @@ package item
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
+	"github.com/wb-go/wbf/ginext"
 	"github.com/wb-go/wbf/zlog"
 
 	"github.com/aliskhannn/sales-tracker/internal/api/request"
@@ -22,7 +23,7 @@ import (
 // service defines business logic for items.
 type service interface {
 	// Create adds a new item with the given fields.
-	Create(ctx context.Context, kind, title string, amount decimal.Decimal, currency string, occurredAt time.Time, metadata []byte) (uuid.UUID, error)
+	Create(ctx context.Context, kind, title string, amount decimal.Decimal, currency string, occurredAt time.Time, categoryID *uuid.UUID, metadata json.RawMessage) (uuid.UUID, error)
 
 	// GetByID returns an item by its ID.
 	GetByID(ctx context.Context, id uuid.UUID) (*model.Item, error)
@@ -32,7 +33,7 @@ type service interface {
 	List(ctx context.Context, from, to *time.Time, categoryID *uuid.UUID, kind *string, limit, offset int, sortBy string) ([]model.Item, error)
 
 	// Update modifies an existing item by its ID.
-	Update(ctx context.Context, id uuid.UUID, kind, title string, amount decimal.Decimal, currency string, occurredAt time.Time, metadata []byte) error
+	Update(ctx context.Context, id uuid.UUID, kind, title string, amount decimal.Decimal, currency string, occurredAt time.Time, categoryID *uuid.UUID, metadata json.RawMessage) error
 
 	// Delete removes an item by its ID.
 	Delete(ctx context.Context, id uuid.UUID) error
@@ -51,28 +52,28 @@ func NewHandler(s service, v *validator.Validate) *Handler {
 
 // CreateRequest JSON body for creating an item.
 type CreateRequest struct {
-	Kind       string     `json:"kind" validate:"required"`
-	Title      string     `json:"title" validate:"required"`
-	Amount     string     `json:"amount" validate:"required"`
-	Currency   string     `json:"currency" validate:"required"`
-	OccurredAt time.Time  `json:"occurred_at" validate:"required"`
-	CategoryID *uuid.UUID `json:"category_id,omitempty"`
-	Metadata   []byte     `json:"metadata,omitempty"`
+	Kind       string          `json:"kind" validate:"required"`
+	Title      string          `json:"title" validate:"required"`
+	Amount     decimal.Decimal `json:"amount" validate:"required"`
+	Currency   string          `json:"currency" validate:"required"`
+	OccurredAt time.Time       `json:"occurred_at" validate:"required"`
+	CategoryID *uuid.UUID      `json:"category_id,omitempty"`
+	Metadata   json.RawMessage `json:"metadata,omitempty"`
 }
 
 // UpdateRequest JSON body for updating an item.
 type UpdateRequest struct {
-	Kind       string     `json:"kind" validate:"required"`
-	Title      string     `json:"title" validate:"required"`
-	Amount     string     `json:"amount" validate:"required"`
-	Currency   string     `json:"currency" validate:"required"`
-	OccurredAt time.Time  `json:"occurred_at" validate:"required"`
-	CategoryID *uuid.UUID `json:"category_id,omitempty"`
-	Metadata   []byte     `json:"metadata,omitempty"`
+	Kind       string          `json:"kind" validate:"required"`
+	Title      string          `json:"title" validate:"required"`
+	Amount     decimal.Decimal `json:"amount" validate:"required"`
+	Currency   string          `json:"currency" validate:"required"`
+	OccurredAt time.Time       `json:"occurred_at" validate:"required"`
+	CategoryID *uuid.UUID      `json:"category_id,omitempty"`
+	Metadata   json.RawMessage `json:"metadata,omitempty"`
 }
 
 // Create handles POST /items.
-func (h *Handler) Create(c *gin.Context) {
+func (h *Handler) Create(c *ginext.Context) {
 	var req CreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		zlog.Logger.Error().Err(err).Msg("failed to bind create request")
@@ -86,14 +87,11 @@ func (h *Handler) Create(c *gin.Context) {
 		return
 	}
 
-	amount, err := decimal.NewFromString(req.Amount)
-	if err != nil {
-		zlog.Logger.Error().Err(err).Msg("failed to convert amount to decimal")
-		response.Fail(c, http.StatusBadRequest, fmt.Errorf("invalid amount format"))
-		return
+	if len(req.Metadata) == 0 {
+		req.Metadata = json.RawMessage(`{}`)
 	}
 
-	id, err := h.service.Create(c, req.Kind, req.Title, amount, req.Currency, req.OccurredAt, req.Metadata)
+	id, err := h.service.Create(c.Request.Context(), req.Kind, req.Title, req.Amount, req.Currency, req.OccurredAt, req.CategoryID, req.Metadata)
 	if err != nil {
 		zlog.Logger.Error().Err(err).Msg("failed to create item")
 		response.Fail(c, http.StatusInternalServerError, fmt.Errorf("internal server error"))
@@ -104,14 +102,14 @@ func (h *Handler) Create(c *gin.Context) {
 }
 
 // GetByID handles GET /items/:id.
-func (h *Handler) GetByID(c *gin.Context) {
+func (h *Handler) GetByID(c *ginext.Context) {
 	id, err := request.ParseUUIDParam(c, "id")
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
 		return
 	}
 
-	i, err := h.service.GetByID(c, id)
+	i, err := h.service.GetByID(c.Request.Context(), id)
 	if err != nil {
 		if errors.Is(err, item.ErrItemNotFound) {
 			zlog.Logger.Error().Err(err).Msg("item not found")
@@ -128,7 +126,7 @@ func (h *Handler) GetByID(c *gin.Context) {
 }
 
 // List handles GET /items.
-func (h *Handler) List(c *gin.Context) {
+func (h *Handler) List(c *ginext.Context) {
 	from, err := request.ParseTimeQuery(c, "from", time.RFC3339)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
@@ -163,7 +161,7 @@ func (h *Handler) List(c *gin.Context) {
 
 	sortBy := request.ParseStringQuery(c, "sort_by", "occurred_at")
 
-	items, err := h.service.List(c, from, to, categoryID, kind, limit, offset, sortBy)
+	items, err := h.service.List(c.Request.Context(), from, to, categoryID, kind, limit, offset, sortBy)
 	if err != nil {
 		if errors.Is(err, item.ErrNoItemsFound) {
 			zlog.Logger.Error().Err(err).Msg("items not found")
@@ -180,7 +178,7 @@ func (h *Handler) List(c *gin.Context) {
 }
 
 // Update handles PUT /items/:id.
-func (h *Handler) Update(c *gin.Context) {
+func (h *Handler) Update(c *ginext.Context) {
 	id, err := request.ParseUUIDParam(c, "id")
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
@@ -200,14 +198,11 @@ func (h *Handler) Update(c *gin.Context) {
 		return
 	}
 
-	amount, err := decimal.NewFromString(req.Amount)
-	if err != nil {
-		zlog.Logger.Error().Err(err).Msg("failed to convert amount to decimal")
-		response.Fail(c, http.StatusBadRequest, fmt.Errorf("invalid amount format"))
-		return
+	if len(req.Metadata) == 0 {
+		req.Metadata = json.RawMessage(`{}`)
 	}
 
-	if err := h.service.Update(c, id, req.Kind, req.Title, amount, req.Currency, req.OccurredAt, req.Metadata); err != nil {
+	if err := h.service.Update(c.Request.Context(), id, req.Kind, req.Title, req.Amount, req.Currency, req.OccurredAt, req.CategoryID, req.Metadata); err != nil {
 		if errors.Is(err, item.ErrItemNotFound) {
 			zlog.Logger.Error().Err(err).Msg("item not found")
 			response.Fail(c, http.StatusNotFound, err)
@@ -223,14 +218,14 @@ func (h *Handler) Update(c *gin.Context) {
 }
 
 // Delete handles DELETE /items/:id.
-func (h *Handler) Delete(c *gin.Context) {
+func (h *Handler) Delete(c *ginext.Context) {
 	id, err := request.ParseUUIDParam(c, "id")
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
 		return
 	}
 
-	if err := h.service.Delete(c, id); err != nil {
+	if err := h.service.Delete(c.Request.Context(), id); err != nil {
 		if errors.Is(err, item.ErrItemNotFound) {
 			zlog.Logger.Error().Err(err).Msg("item not found")
 			response.Fail(c, http.StatusNotFound, err)

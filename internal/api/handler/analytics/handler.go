@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/wb-go/wbf/ginext"
 	"github.com/wb-go/wbf/zlog"
@@ -61,7 +60,7 @@ func (h *Handler) Sum(c *ginext.Context) {
 		return
 	}
 
-	total, err := h.service.Sum(c, q.From, q.To, q.CategoryID, q.Kind)
+	total, err := h.service.Sum(c.Request.Context(), q.From, q.To, q.CategoryID, q.Kind)
 	if err != nil {
 		zlog.Logger.Error().Err(err).Msg("failed to calculate sum")
 		response.Fail(c, http.StatusInternalServerError, fmt.Errorf("internal server error"))
@@ -79,7 +78,7 @@ func (h *Handler) Avg(c *ginext.Context) {
 		return
 	}
 
-	avg, err := h.service.Avg(c, q.From, q.To, q.CategoryID, q.Kind)
+	avg, err := h.service.Avg(c.Request.Context(), q.From, q.To, q.CategoryID, q.Kind)
 	if err != nil {
 		zlog.Logger.Error().Err(err).Msg("failed to calculate average")
 		response.Fail(c, http.StatusInternalServerError, fmt.Errorf("internal server error"))
@@ -97,7 +96,7 @@ func (h *Handler) Count(c *ginext.Context) {
 		return
 	}
 
-	cnt, err := h.service.Count(c, q.From, q.To, q.CategoryID, q.Kind)
+	cnt, err := h.service.Count(c.Request.Context(), q.From, q.To, q.CategoryID, q.Kind)
 	if err != nil {
 		zlog.Logger.Error().Err(err).Msg("failed to calculate count")
 		response.Fail(c, http.StatusInternalServerError, fmt.Errorf("internal server error"))
@@ -115,7 +114,7 @@ func (h *Handler) Median(c *ginext.Context) {
 		return
 	}
 
-	median, err := h.service.Median(c, q.From, q.To, q.CategoryID, q.Kind)
+	median, err := h.service.Median(c.Request.Context(), q.From, q.To, q.CategoryID, q.Kind)
 	if err != nil {
 		zlog.Logger.Error().Err(err).Msg("failed to calculate median")
 		response.Fail(c, http.StatusInternalServerError, fmt.Errorf("internal server error"))
@@ -126,14 +125,14 @@ func (h *Handler) Median(c *ginext.Context) {
 }
 
 // Percentile handles GET /analytics/percentile.
-func (h *Handler) Percentile(c *gin.Context) {
+func (h *Handler) Percentile(c *ginext.Context) {
 	q, err := h.parseQuery(c)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
 		return
 	}
 
-	value, err := h.service.Percentile(c, q.From, q.To, q.CategoryID, q.Kind, q.Percentile)
+	value, err := h.service.Percentile(c.Request.Context(), q.From, q.To, q.CategoryID, q.Kind, q.Percentile)
 	if err != nil {
 		zlog.Logger.Error().Err(err).Msg("failed to calculate percentile")
 		response.Fail(c, http.StatusInternalServerError, fmt.Errorf("internal server error"))
@@ -145,12 +144,12 @@ func (h *Handler) Percentile(c *gin.Context) {
 
 // parseQuery parses common analytics query parameters.
 func (h *Handler) parseQuery(c *ginext.Context) (*Query, error) {
-	from, err := request.ParseTimeQuery(c, "from", time.RFC3339)
+	from, err := request.ParseTimeQuery(c, "from", time.DateOnly)
 	if err != nil {
 		return nil, err
 	}
 
-	to, err := request.ParseTimeQuery(c, "to", time.RFC3339)
+	to, err := request.ParseTimeQuery(c, "to", time.DateOnly)
 	if err != nil {
 		return nil, err
 	}

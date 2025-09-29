@@ -77,11 +77,11 @@ func (r *Repository) List(ctx context.Context, filter *model.ItemFilter) ([]mode
 	query := `
 		SELECT id, kind, title, amount, currency, occurred_at, category_id, metadata, created_at, updated_at
 		FROM items
-		WHERE ($1::timestamptz IS NULL OR occured_at >= $1)
-		  AND ($2::timestamptz IS NULL OR occured_at <= $2)
+		WHERE ($1::timestamptz IS NULL OR occurred_at >= $1)
+		  AND ($2::timestamptz IS NULL OR occurred_at <= $2)
 		  AND ($3::uuid IS NULL OR category_id = $3)
-		  AND ($4::text IS NULL OR kin = $4)
-		ORDER BY occured_at DESC
+		  AND ($4::item_kind IS NULL OR kind = $4)
+		ORDER BY occurred_at DESC
 		LIMIT $5 OFFSET $6;
 	`
 

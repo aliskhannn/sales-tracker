@@ -1,7 +1,7 @@
 server:
-  port: ":8080"
-  read_timeout: 5s
-  write_timeout: 10s
+  http_port: ":8080"
+  read_timeout: "5s"
+  write_timeout: "10s"
 
 database:
   master:
@@ -14,7 +14,7 @@ database:
 
   max_open_connections: 10
   max_idle_connections: 5
-  conn_max_lifetime: 30m
+  conn_max_lifetime: "30m"
 
 analytics:
   percentile_default: 0.9

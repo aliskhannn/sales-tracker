@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/wb-go/wbf/ginext"
 	"github.com/wb-go/wbf/zlog"
 
 	"github.com/aliskhannn/sales-tracker/internal/api/request"
@@ -65,7 +65,8 @@ type UpdateRequest struct {
 }
 
 // Create handles POST /categories.
-func (h *Handler) Create(c *gin.Context) {
+func (h *Handler) Create(c *ginext.Context) {
+	zlog.Logger.Info().Msg("create requested")
 	var req CreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		zlog.Logger.Error().Err(err).Msg("failed to bind create request")
@@ -90,7 +91,7 @@ func (h *Handler) Create(c *gin.Context) {
 }
 
 // GetByID handles GET /categories/:id.
-func (h *Handler) GetByID(c *gin.Context) {
+func (h *Handler) GetByID(c *ginext.Context) {
 	id, err := request.ParseUUIDParam(c, "id")
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
@@ -116,7 +117,7 @@ func (h *Handler) GetByID(c *gin.Context) {
 }
 
 // List handles GET /categories.
-func (h *Handler) List(c *gin.Context) {
+func (h *Handler) List(c *ginext.Context) {
 	categories, err := h.service.List(c.Request.Context())
 	if err != nil {
 		// If category not found, return 404 Not Found.
@@ -136,7 +137,7 @@ func (h *Handler) List(c *gin.Context) {
 }
 
 // Update handles PUT /categories/:id.
-func (h *Handler) Update(c *gin.Context) {
+func (h *Handler) Update(c *ginext.Context) {
 	id, err := request.ParseUUIDParam(c, "id")
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
@@ -174,7 +175,7 @@ func (h *Handler) Update(c *gin.Context) {
 }
 
 // Delete handles DELETE /categories/:id.
-func (h *Handler) Delete(c *gin.Context) {
+func (h *Handler) Delete(c *ginext.Context) {
 	id, err := request.ParseUUIDParam(c, "id")
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)

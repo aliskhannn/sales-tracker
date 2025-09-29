@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/wb-go/wbf/ginext"
+	"github.com/wb-go/wbf/zlog"
 
 	"github.com/aliskhannn/sales-tracker/internal/api/handler/analytics"
 	"github.com/aliskhannn/sales-tracker/internal/api/handler/category"
@@ -18,6 +19,12 @@ func New(
 
 	r.Use(ginext.Logger())
 	r.Use(ginext.Recovery())
+
+	// Health check route
+	r.GET("/health", func(c *ginext.Context) {
+		zlog.Logger.Info().Msg("Health check requested")
+		c.JSON(200, map[string]string{"status": "ok"})
+	})
 
 	api := r.Group("/api")
 	{

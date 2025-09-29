@@ -9,6 +9,8 @@ services:
       - sales-tracker
     ports:
       - "3000:80"
+    networks:
+      - app-network
 
   sales-tracker:
     build: ./

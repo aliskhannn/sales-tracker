@@ -2,6 +2,7 @@ package item
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -48,7 +49,8 @@ func (s *Service) Create(
 	amount decimal.Decimal,
 	currency string,
 	occurredAt time.Time,
-	metadata []byte,
+	categoryID *uuid.UUID,
+	metadata json.RawMessage,
 ) (uuid.UUID, error) {
 	i := &model.Item{
 		Kind:       kind,
@@ -56,6 +58,7 @@ func (s *Service) Create(
 		Amount:     amount,
 		Currency:   currency,
 		OccurredAt: occurredAt,
+		CategoryID: categoryID,
 		Metadata:   metadata,
 	}
 
@@ -114,7 +117,8 @@ func (s *Service) Update(
 	amount decimal.Decimal,
 	currency string,
 	occurredAt time.Time,
-	metadata []byte,
+	categoryID *uuid.UUID,
+	metadata json.RawMessage,
 ) error {
 	i := &model.Item{
 		ID:         id,
@@ -123,6 +127,7 @@ func (s *Service) Update(
 		Amount:     amount,
 		Currency:   currency,
 		OccurredAt: occurredAt,
+		CategoryID: categoryID,
 		Metadata:   metadata,
 	}
 
