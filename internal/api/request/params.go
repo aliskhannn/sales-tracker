@@ -94,3 +94,21 @@ func ParseIntQuery(c *ginext.Context, key string, defaultValue int) (int, error)
 
 	return n, nil
 }
+
+// ParseFloatQuery parses a query parameter as float64.
+// Returns defaultValue if parameter is empty.
+// Returns error if value is present but not a valid float.
+func ParseFloatQuery(c *ginext.Context, key string, defaultValue float64) (float64, error) {
+	value := c.Query(key)
+	if value == "" {
+		return defaultValue, nil
+	}
+
+	f, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		zlog.Logger.Error().Err(err).Str(key, value).Msg("failed to parse float query")
+		return 0, fmt.Errorf("invalid float format for %s", key)
+	}
+
+	return f, nil
+}
