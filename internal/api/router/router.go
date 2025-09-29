@@ -1,7 +1,6 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/wb-go/wbf/ginext"
 
 	"github.com/aliskhannn/sales-tracker/internal/api/handler/analytics"
@@ -12,13 +11,13 @@ import (
 // New creates a new Gin engine and sets up routes for the SalesTracker API.
 func New(
 	categoryHandler *category.Handler,
-	itemHandler item.Handler,
-	analyticsHandler analytics.Handler,
+	itemHandler *item.Handler,
+	analyticsHandler *analytics.Handler,
 ) *ginext.Engine {
 	r := ginext.New()
 
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
+	r.Use(ginext.Logger())
+	r.Use(ginext.Recovery())
 
 	api := r.Group("/api")
 	{
