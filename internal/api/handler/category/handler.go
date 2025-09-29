@@ -9,9 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-	"github.com/wb-go/wbf/ginext"
 	"github.com/wb-go/wbf/zlog"
 
+	"github.com/aliskhannn/sales-tracker/internal/api/request"
 	"github.com/aliskhannn/sales-tracker/internal/api/response"
 	"github.com/aliskhannn/sales-tracker/internal/model"
 	"github.com/aliskhannn/sales-tracker/internal/repository/category"
@@ -64,7 +64,7 @@ type UpdateRequest struct {
 	ParentID    *uuid.UUID `json:"parent_id,omitempty"`
 }
 
-// Create handles POST /categories
+// Create handles POST /categories.
 func (h *Handler) Create(c *gin.Context) {
 	var req CreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -89,9 +89,9 @@ func (h *Handler) Create(c *gin.Context) {
 	response.Created(c, map[string]string{"id": id.String()})
 }
 
-// GetByID handles GET /categories/:id
+// GetByID handles GET /categories/:id.
 func (h *Handler) GetByID(c *gin.Context) {
-	id, err := parseUUIDParam(c, "id")
+	id, err := request.ParseUUIDParam(c, "id")
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
 		return
@@ -115,7 +115,7 @@ func (h *Handler) GetByID(c *gin.Context) {
 	response.OK(c, map[string]*model.Category{"category": cat})
 }
 
-// List handles GET /categories
+// List handles GET /categories.
 func (h *Handler) List(c *gin.Context) {
 	categories, err := h.service.List(c.Request.Context())
 	if err != nil {
@@ -135,9 +135,9 @@ func (h *Handler) List(c *gin.Context) {
 	response.OK(c, map[string][]model.Category{"categories": categories})
 }
 
-// Update handles PUT /categories/:id
+// Update handles PUT /categories/:id.
 func (h *Handler) Update(c *gin.Context) {
-	id, err := parseUUIDParam(c, "id")
+	id, err := request.ParseUUIDParam(c, "id")
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
 		return
@@ -173,9 +173,9 @@ func (h *Handler) Update(c *gin.Context) {
 	response.OK(c, map[string]string{"message": "category updated"})
 }
 
-// Delete handles DELETE /categories/:id
+// Delete handles DELETE /categories/:id.
 func (h *Handler) Delete(c *gin.Context) {
-	id, err := parseUUIDParam(c, "id")
+	id, err := request.ParseUUIDParam(c, "id")
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
 		return
@@ -196,22 +196,4 @@ func (h *Handler) Delete(c *gin.Context) {
 	}
 
 	response.OK(c, map[string]string{"message": "category deleted"})
-}
-
-// ParseUUIDParam parses a UUID from the URL parameters and logs errors if invalid.
-// Returns the UUID and an error if parsing fails.
-func parseUUIDParam(c *ginext.Context, param string) (uuid.UUID, error) {
-	idStr := c.Param(param)
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		zlog.Logger.Error().Err(err).Interface(param, idStr).Msg("failed to parse UUID")
-		return uuid.Nil, fmt.Errorf("invalid %s", param)
-	}
-
-	if id == uuid.Nil {
-		zlog.Logger.Warn().Interface(param, id).Msg("missing UUID")
-		return uuid.Nil, fmt.Errorf("missing %s", param)
-	}
-
-	return id, nil
 }
