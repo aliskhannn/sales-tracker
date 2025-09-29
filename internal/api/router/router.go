@@ -1,86 +1,54 @@
 package router
 
 import (
-	"github.com/aliskhannn/sales-tracker/internal/analytics"
-	"github.com/aliskhannn/sales-tracker/internal/config"
-	"github.com/aliskhannn/sales-tracker/internal/item"
-	"github.com/aliskhannn/sales-tracker/internal/middleware"
 	"github.com/gin-gonic/gin"
+	"github.com/wb-go/wbf/ginext"
+
+	"github.com/aliskhannn/sales-tracker/internal/api/handler/analytics"
+	"github.com/aliskhannn/sales-tracker/internal/api/handler/category"
+	"github.com/aliskhannn/sales-tracker/internal/api/handler/item"
 )
 
 // New creates a new Gin engine and sets up routes for the SalesTracker API.
-func New() *gin.Engine {
-	r := gin.New()
+func New(
+	categoryHandler *category.Handler,
+	itemHandler item.Handler,
+	analyticsHandler analytics.Handler,
+) *ginext.Engine {
+	r := ginext.New()
 
-	// Middlewares: Logger, Recovery, optional CORS
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
-	r.Use(middleware.CORSMiddleware(cfg)) // твой CORS middleware или можно использовать gin-contrib
 
-	// --- Item routes ---
-	itemGroup := r.Group("/api/items")
+	api := r.Group("/api")
 	{
-		// Public routes (optional)
-		itemGroup.GET("", func(c *gin.Context) {
-			// Example: parse query params and call itemHandler.List(...)
-		})
-		itemGroup.GET("/:id", func(c *gin.Context) {
-			// Example: call itemHandler.GetByID(...)
-		})
-
-		// Protected routes
-		itemGroup.Use(middleware.Auth(cfg.JWT.Secret, cfg.JWT.TTL))
+		categories := api.Group("/categories")
 		{
-			itemGroup.POST("", func(c *gin.Context) {
-				// call itemHandler.Create(...)
-			})
-			itemGroup.PUT("/:id", func(c *gin.Context) {
-				// call itemHandler.Update(...)
-			})
-			itemGroup.DELETE("/:id", func(c *gin.Context) {
-				// call itemHandler.Delete(...)
-			})
+			categories.POST("", categoryHandler.Create)
+			categories.GET("", categoryHandler.List)
+			categories.GET("/:id", categoryHandler.GetByID)
+			categories.PUT("/:id", categoryHandler.Update)
+			categories.DELETE("/:id", categoryHandler.Delete)
 		}
-	}
 
-	// --- Analytics routes ---
-	analyticsGroup := r.Group("/api/analytics")
-	{
-		// Protected route for aggregated data
-		analyticsGroup.Use(middleware.Auth(cfg.JWT.Secret, cfg.JWT.TTL))
+		items := api.Group("/items")
 		{
-			analyticsGroup.GET("/sum", func(c *gin.Context) {
-				// parse from/to/category/kind query params
-				// call analyticsHandler.Sum(...)
-			})
-			analyticsGroup.GET("/avg", func(c *gin.Context) {
-				// call analyticsHandler.Avg(...)
-			})
-			analyticsGroup.GET("/count", func(c *gin.Context) {
-				// call analyticsHandler.Count(...)
-			})
-			analyticsGroup.GET("/median", func(c *gin.Context) {
-				// call analyticsHandler.Median(...)
-			})
-			analyticsGroup.GET("/percentile/:p", func(c *gin.Context) {
-				// call analyticsHandler.Percentile(...), p from URL param (e.g., 0.9 for 90th percentile)
-			})
+			items.POST("", itemHandler.Create)
+			items.GET("", itemHandler.List)
+			items.GET("/:id", itemHandler.GetByID)
+			items.PUT("/:id", itemHandler.Update)
+			items.DELETE("/:id", itemHandler.Delete)
+		}
+
+		analyticsGroup := api.Group("/analytics")
+		{
+			analyticsGroup.GET("/sum", analyticsHandler.Sum)
+			analyticsGroup.GET("/avg", analyticsHandler.Avg)
+			analyticsGroup.GET("/count", analyticsHandler.Count)
+			analyticsGroup.GET("/median", analyticsHandler.Median)
+			analyticsGroup.GET("/percentile", analyticsHandler.Percentile)
 		}
 	}
 
 	return r
-}
-
-// --- Example CORS middleware ---
-func CORSMiddleware(cfg *config.Config) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*") // настройка по необходимости
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	}
 }
