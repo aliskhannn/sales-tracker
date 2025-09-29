@@ -13,6 +13,7 @@ import (
 
 	"github.com/aliskhannn/sales-tracker/internal/api/request"
 	"github.com/aliskhannn/sales-tracker/internal/api/response"
+	"github.com/aliskhannn/sales-tracker/internal/config"
 )
 
 type service interface {
@@ -35,11 +36,12 @@ type service interface {
 // Handler provides HTTP handlers for analytics.
 type Handler struct {
 	service service
+	cfg     *config.Config
 }
 
 // NewHandler creates a new analytics handler.
-func NewHandler(s service) *Handler {
-	return &Handler{service: s}
+func NewHandler(s service, cfg *config.Config) *Handler {
+	return &Handler{service: s, cfg: cfg}
 }
 
 // Query represents query parameters for analytics endpoints.
@@ -53,7 +55,7 @@ type Query struct {
 
 // Sum handles GET /analytics/sum.
 func (h *Handler) Sum(c *ginext.Context) {
-	q, err := parseQuery(c)
+	q, err := h.parseQuery(c)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
 		return
@@ -71,7 +73,7 @@ func (h *Handler) Sum(c *ginext.Context) {
 
 // Avg handles GET /analytics/avg.
 func (h *Handler) Avg(c *ginext.Context) {
-	q, err := parseQuery(c)
+	q, err := h.parseQuery(c)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
 		return
@@ -89,7 +91,7 @@ func (h *Handler) Avg(c *ginext.Context) {
 
 // Count handles GET /analytics/count.
 func (h *Handler) Count(c *ginext.Context) {
-	q, err := parseQuery(c)
+	q, err := h.parseQuery(c)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
 		return
@@ -107,7 +109,7 @@ func (h *Handler) Count(c *ginext.Context) {
 
 // Median handles GET /analytics/median.
 func (h *Handler) Median(c *ginext.Context) {
-	q, err := parseQuery(c)
+	q, err := h.parseQuery(c)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
 		return
@@ -125,7 +127,7 @@ func (h *Handler) Median(c *ginext.Context) {
 
 // Percentile handles GET /analytics/percentile.
 func (h *Handler) Percentile(c *gin.Context) {
-	q, err := parseQuery(c)
+	q, err := h.parseQuery(c)
 	if err != nil {
 		response.Fail(c, http.StatusBadRequest, err)
 		return
@@ -142,7 +144,7 @@ func (h *Handler) Percentile(c *gin.Context) {
 }
 
 // parseQuery parses common analytics query parameters.
-func parseQuery(c *ginext.Context) (*Query, error) {
+func (h *Handler) parseQuery(c *ginext.Context) (*Query, error) {
 	from, err := request.ParseTimeQuery(c, "from", time.RFC3339)
 	if err != nil {
 		return nil, err
@@ -160,7 +162,7 @@ func parseQuery(c *ginext.Context) (*Query, error) {
 
 	kind := request.ParseStringQueryPtr(c, "kind")
 
-	percentile, err := request.ParseFloatQuery(c, "percentile", 0.9)
+	percentile, err := request.ParseFloatQuery(c, "percentile", h.cfg.Analytics.PercentileDefault)
 	if err != nil {
 		return nil, err
 	}
