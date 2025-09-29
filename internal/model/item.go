@@ -7,18 +7,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-// ItemKind enumerates the supported kinds of an item/transaction.
-//
-// Common values:
-//
-//	"income"  - money coming in
-//	"expense" - money going out
-//	"refund"  - refunded amount
-//	"transfer" - internal transfer (not counted as revenue)
-//
-// Note: The DB uses a Postgres ENUM "item_kind" to enforce allowed values.
-type ItemKind string
-
 // Item represents a financial record / sale / transaction.
 //
 // Fields:
@@ -33,13 +21,13 @@ type ItemKind string
 //   - CreatedAt, UpdatedAt: DB-managed timestamps
 type Item struct {
 	ID         uuid.UUID       `db:"id" json:"id"`
-	Kind       ItemKind        `db:"kind" json:"kind"`
+	Kind       string          `db:"kind" json:"kind"`
 	Title      string          `db:"title" json:"title"`
 	Amount     decimal.Decimal `db:"amount" json:"amount"` // as string to preserve precision; parse with decimal libs if needed
 	Currency   string          `db:"currency" json:"currency"`
 	OccurredAt time.Time       `db:"occurred_at" json:"occurred_at"`
 	CategoryID *uuid.UUID      `db:"category_id,omitempty" json:"category_id,omitempty"`
-	Metadata   []byte          `db:"metadata" json:"metadata"` // store raw JSONB bytes; unmarshal when needed
+	Metadata   []byte          `db:"metadata" json:"metadata"` // store raw JSONB bytes
 	CreatedAt  time.Time       `db:"created_at" json:"created_at"`
 	UpdatedAt  time.Time       `db:"updated_at" json:"updated_at"`
 }

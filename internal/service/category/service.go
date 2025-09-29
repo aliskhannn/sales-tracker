@@ -76,12 +76,12 @@ func (s *Service) List(ctx context.Context) ([]model.Category, error) {
 
 // Update modifies an existing category identified by id.
 // parentID can be nil if the category should not have a parent.
-func (s *Service) Update(ctx context.Context, id uuid.UUID, name, description string, parentID uuid.UUID) error {
+func (s *Service) Update(ctx context.Context, id uuid.UUID, name, description string, parentID *uuid.UUID) error {
 	c := &model.Category{
 		ID:          id,
 		Name:        name,
 		Description: &description,
-		ParentID:    &parentID,
+		ParentID:    parentID,
 	}
 
 	err := s.repository.Update(ctx, c)
