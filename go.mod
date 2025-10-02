@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/viper v1.18.2
-	github.com/wb-go/wbf v0.0.4
+	github.com/wb-go/wbf v0.0.5
 )
 
 require (

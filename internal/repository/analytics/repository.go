@@ -31,7 +31,7 @@ func (r *Repository) Sum(ctx context.Context, filter *model.ItemFilter) (string,
 	`
 
 	var total string
-	err := r.db.Master.QueryRowContext(ctx, query,
+	err := r.db.QueryRowContext(ctx, query,
 		filter.From,
 		filter.To,
 		filter.CategoryID,
@@ -56,7 +56,7 @@ func (r *Repository) Avg(ctx context.Context, filter *model.ItemFilter) (string,
 	`
 
 	var avg string
-	err := r.db.Master.QueryRowContext(ctx, query,
+	err := r.db.QueryRowContext(ctx, query,
 		filter.From,
 		filter.To,
 		filter.CategoryID,
@@ -81,7 +81,7 @@ func (r *Repository) Count(ctx context.Context, filter *model.ItemFilter) (int64
 	`
 
 	var cnt int64
-	err := r.db.Master.QueryRowContext(ctx, query,
+	err := r.db.QueryRowContext(ctx, query,
 		filter.From,
 		filter.To,
 		filter.CategoryID,
@@ -109,7 +109,7 @@ func (r *Repository) Median(ctx context.Context, filter *model.ItemFilter) (stri
 	`
 
 	var median string
-	err := r.db.Master.QueryRowContext(ctx, query,
+	err := r.db.QueryRowContext(ctx, query,
 		filter.From,
 		filter.To,
 		filter.CategoryID,
@@ -137,7 +137,7 @@ func (r *Repository) Percentile(ctx context.Context, filter *model.ItemFilter, p
 	`
 
 	var value string
-	err := r.db.Master.QueryRowContext(ctx, query,
+	err := r.db.QueryRowContext(ctx, query,
 		percentile,
 		filter.From,
 		filter.To,

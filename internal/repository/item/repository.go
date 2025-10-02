@@ -36,7 +36,7 @@ func (r *Repository) Create(ctx context.Context, i *model.Item) (uuid.UUID, erro
 		RETURNING id;
 	`
 
-	err := r.db.Master.QueryRowContext(ctx, query,
+	err := r.db.QueryRowContext(ctx, query,
 		i.Kind, i.Title, i.Amount, i.Currency, i.OccurredAt, i.CategoryID, i.Metadata,
 	).Scan(&i.ID)
 	if err != nil {
@@ -55,7 +55,7 @@ func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*model.Item, er
 	`
 
 	var i model.Item
-	err := r.db.Master.QueryRowContext(ctx, query, id).Scan(
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&i.ID, &i.Kind, &i.Title, &i.Amount, &i.Currency, &i.OccurredAt,
 		&i.CategoryID, &i.Metadata, &i.CreatedAt, &i.UpdatedAt,
 	)

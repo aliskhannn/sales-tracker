@@ -35,7 +35,7 @@ func (r *Repository) Create(ctx context.Context, c *model.Category) (uuid.UUID, 
 		RETURNING id;
 	`
 
-	err := r.db.Master.QueryRowContext(ctx, query, c.Name, c.Description, c.ParentID).Scan(&c.ID)
+	err := r.db.QueryRowContext(ctx, query, c.Name, c.Description, c.ParentID).Scan(&c.ID)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("insert category: %w", err)
 	}
@@ -52,7 +52,7 @@ func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*model.Category
 	`
 
 	var c model.Category
-	err := r.db.Master.QueryRowContext(ctx, query, id).Scan(
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		c.ID, c.Name, c.Description, c.ParentID, c.CreatedAt, c.UpdatedAt,
 	)
 	if err != nil {
