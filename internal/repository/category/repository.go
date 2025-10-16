@@ -13,8 +13,7 @@ import (
 )
 
 var (
-	ErrCategoryNotFound  = errors.New("category not found")
-	ErrNoCategoriesFound = errors.New("no categories found")
+	ErrCategoryNotFound = errors.New("category not found")
 )
 
 // Repository provides methods to interact with categories.
@@ -94,10 +93,6 @@ func (r *Repository) List(ctx context.Context) ([]model.Category, error) {
 
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("list categories: %w", err)
-	}
-
-	if len(categories) == 0 {
-		return nil, ErrNoCategoriesFound
 	}
 
 	return categories, nil

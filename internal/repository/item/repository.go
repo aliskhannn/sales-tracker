@@ -115,10 +115,6 @@ func (r *Repository) List(ctx context.Context, filter *model.ItemFilter) ([]mode
 		return nil, fmt.Errorf("list items: %w", err)
 	}
 
-	if len(items) == 0 {
-		return nil, ErrNoItemsFound
-	}
-
 	return items, nil
 }
 

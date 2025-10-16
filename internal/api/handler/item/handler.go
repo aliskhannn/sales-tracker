@@ -163,12 +163,6 @@ func (h *Handler) List(c *ginext.Context) {
 
 	items, err := h.service.List(c.Request.Context(), from, to, categoryID, kind, limit, offset, sortBy)
 	if err != nil {
-		if errors.Is(err, item.ErrNoItemsFound) {
-			zlog.Logger.Error().Err(err).Msg("items not found")
-			response.Fail(c, http.StatusNotFound, err)
-			return
-		}
-
 		zlog.Logger.Error().Err(err).Msg("failed to list items")
 		response.Fail(c, http.StatusInternalServerError, fmt.Errorf("internal server error"))
 		return

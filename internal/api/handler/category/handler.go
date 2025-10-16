@@ -120,13 +120,6 @@ func (h *Handler) GetByID(c *ginext.Context) {
 func (h *Handler) List(c *ginext.Context) {
 	categories, err := h.service.List(c.Request.Context())
 	if err != nil {
-		// If category not found, return 404 Not Found.
-		if errors.Is(err, category.ErrNoCategoriesFound) {
-			zlog.Logger.Error().Err(err).Msg("categories not found")
-			response.Fail(c, http.StatusNotFound, err)
-			return
-		}
-
 		// Internal Server Error.
 		zlog.Logger.Error().Err(err).Msg("failed to get categories")
 		response.Fail(c, http.StatusInternalServerError, fmt.Errorf("internal server error"))
